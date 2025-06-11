@@ -2,7 +2,7 @@ import unittest
 from unittest.mock import patch, Mock, MagicMock
 import requests
 from collections import defaultdict
-from task2.main import fetch_html, parse_page, save_to_csv, main
+from main import fetch_html, parse_page, save_to_csv
 
 
 class TestFetchHtml(unittest.TestCase):

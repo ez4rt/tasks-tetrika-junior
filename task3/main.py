@@ -8,12 +8,30 @@ def create_group_intervals(intervals: list) -> list:
     return group_intervals
 
 
-def get_merged_intervals(intervals_dict: dict) -> list:
-    return intervals_dict['pupil'] + intervals_dict['tutor']
+def clearing_intervals(intervals: list) -> list:
+    intervals.sort()
+    updated_intervals = list()
+    for interval in intervals:
+        if not updated_intervals or interval[0] > updated_intervals[-1][1]:
+            updated_intervals.append(interval)
+        else:
+            updated_intervals[-1] = (updated_intervals[-1][0], max(interval[1], updated_intervals[-1][1]))
+    return updated_intervals
 
 
-def get_lesson_times(intervals_dict: dict) -> tuple:
-    return intervals_dict['lesson']
+def intersection_intervals(list1, list2):
+    intersections = []
+    for interval1 in list1:
+        for interval2 in list2:
+            start = max(interval1[0], interval2[0])
+            end = min(interval1[1], interval2[1])
+            if start < end:
+                intersections.append((start, end))
+    return intersections
+
+
+def get_lesson_times(intervals: dict) -> tuple:
+    return intervals['lesson']
 
 
 def calculate_overlap(interval: tuple, lesson_start: int, lesson_end: int) -> int:
@@ -23,9 +41,13 @@ def calculate_overlap(interval: tuple, lesson_start: int, lesson_end: int) -> in
 
 
 def appearance(intervals: dict[str, list[int]]) -> int:
-    all_intervals = get_merged_intervals(intervals)
+    group_intervals_tutor = create_group_intervals(intervals['tutor'])
+    group_intervals_tutor = clearing_intervals(group_intervals_tutor)
 
-    group_intervals = create_group_intervals(all_intervals)
+    group_intervals_pupil = create_group_intervals(intervals['pupil'])
+    group_intervals_pupil = clearing_intervals(group_intervals_pupil)
+
+    group_intervals = intersection_intervals(group_intervals_pupil, group_intervals_tutor)
 
     start_lesson, end_lesson = get_lesson_times(intervals)
 
@@ -44,7 +66,10 @@ tests = [
      'answer': 3117
      },
     {'intervals': {'lesson': [1594702800, 1594706400],
-                   'pupil': [1594702789, 1594704500, 1594702807, 1594704542, 1594704512, 1594704513, 1594704564, 1594705150, 1594704581, 1594704582, 1594704734, 1594705009, 1594705095, 1594705096, 1594705106, 1594706480, 1594705158, 1594705773, 1594705849, 1594706480, 1594706500, 1594706875, 1594706502, 1594706503, 1594706524, 1594706524, 1594706579, 1594706641],
+                   'pupil': [1594702789, 1594704500, 1594702807, 1594704542, 1594704512, 1594704513, 1594704564,
+                             1594705150, 1594704581, 1594704582, 1594704734, 1594705009, 1594705095, 1594705096,
+                             1594705106, 1594706480, 1594705158, 1594705773, 1594705849, 1594706480, 1594706500,
+                             1594706875, 1594706502, 1594706503, 1594706524, 1594706524, 1594706579, 1594706641],
                    'tutor': [1594700035, 1594700364, 1594702749, 1594705148, 1594705149, 1594706463]},
      'answer': 3577
      },
@@ -55,7 +80,8 @@ tests = [
      },
 ]
 
+
 if __name__ == '__main__':
     for i, test in enumerate(tests):
         test_answer = appearance(test['intervals'])
-        # assert test_answer == test['answer'], f'Error on test case {i}, got {test_answer}, expected {test["answer"]}'
+        assert test_answer == test['answer'], f'Error on test case {i}, got {test_answer}, expected {test["answer"]}'
